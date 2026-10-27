@@ -1,0 +1,92 @@
+AE4 - COMPROBACIONES
+====================
+
+1. ESTADO DE LOS SERVICIOS
+--------------------------
+$ docker compose ps
+NAME            IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+ae4-app-1       ae4-app               "gunicorn config.wsg…"   app       2 minutes ago    Up 2 minutes (healthy)    8000/tcp
+ae4-db-1        postgres:16-alpine    "docker-entrypoint.s…"   db        28 minutes ago   Up 24 minutes (healthy)   5432/tcp
+ae4-nginx-1     nginx:1.27-alpine     "/docker-entrypoint.…"   nginx     28 minutes ago   Up 28 minutes             0.0.0.0:8000->80/tcp, [::]:8000->80/tcp
+ae4-pgadmin-1   dpage/pgadmin4:9.17   "/entrypoint.sh"         pgadmin   28 minutes ago   Up 28 minutes             443/tcp, 0.0.0.0:5050->80/tcp, [::]:5050->80/tcp
+
+2. PAGINA PRINCIPAL
+-------------------
+$ curl -i http://localhost:8000/
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   252    0   252    0     0    98k      0 --:--:-- --:--:-- --:--:--  123k
+HTTP/1.1 200 OK
+Server: nginx/1.27.5
+Date: Tue, 27 Oct 2026 19:53:33 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Aplicación AE4 - DPL</title></head>
+<body>
+<h1>Aplicación AE4 - DPL</h1>
+<p>Contenedor: <strong>9b75c2d66b44</strong></p>
+<p>Visitas totales: <strong>16</strong></p>
+</body>
+</html>
+
+3. HEALTHCHECK
+--------------
+$ curl -i http://localhost:8000/healthz
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    44    0    44    0     0  27194      0 --:--:-- --:--:-- --:--:-- 44000
+HTTP/1.1 200 OK
+Server: nginx/1.27.5
+Date: Tue, 27 Oct 2026 19:53:33 GMT
+Content-Type: application/json
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+{"status": "ok", "hostname": "9b75c2d66b44"}
+4. DATOS EN POSTGRESQL
+----------------------
+$ docker compose exec -T db psql -U alumno -d travelroad -c "SELECT count(*) FROM places;"
+ count 
+-------
+    11
+(1 row)
+
+
+5. API DE LUGARES
+-----------------
+$ curl -s http://localhost:8000/api/lugares
+{"lugares": [{"id": 1, "name": "Tokio", "visited": false}, {"id": 2, "name": "Budapest", "visited": true}, {"id": 3, "name": "Nairobi", "visited": false}, {"id": 4, "name": "Berl\u00edn", "visited": true}, {"id": 5, "name": "Lisboa", "visited": true}, {"id": 6, "name": "Denver", "visited": false}, {"id": 7, "name": "Mosc\u00fa", "visited": false}, {"id": 8, "name": "Oslo", "visited": false}, {"id": 9, "name": "R\u00edo", "visited": true}, {"id": 10, "name": "Cincinnati", "visited": false}, {"id": 11, "name": "Helsinki", "visited": false}], "total": 11}
+
+6. PGADMIN
+----------
+$ curl -s http://localhost:5050/misc/ping
+PING
+
+7. DEPLOY.SH
+------------
+$ ls -l deploy.sh
+-rwxrwxr-x 1 mariaih mariaih 754 oct 27 19:38 deploy.sh
+
+8. ESTRUCTURA FINAL
+-------------------
+./app/api/__init__.py
+./app/api/urls.py
+./app/api/views.py
+./app/config/__init__.py
+./app/config/settings.py
+./app/config/urls.py
+./app/config/wsgi.py
+./app/Dockerfile
+./app/manage.py
+./app/requirements.txt
+./compose.yml
+./comprobaciones.txt
+./db/init.sql
+./deploy.sh
+./.gitignore
+./nginx/default.conf
+./README.md
